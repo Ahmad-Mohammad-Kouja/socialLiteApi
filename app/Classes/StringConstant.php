@@ -7,8 +7,8 @@ namespace App\Classes;
 class StringConstant
 {
 
-
-
+	public static $defaultUserImage='/media/photo/user/user11589406136.png';
+		
     public static function getShortPath($storageType,$fileType)
     {
         return '/media/'.$storageType.'/'.$fileType.'/';

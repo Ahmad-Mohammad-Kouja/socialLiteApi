@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Social;
 
+use App\Classes\FileClass;
 use App\Classes\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Social\Posts\CreatePostRequest;
@@ -32,6 +33,8 @@ class PostController extends Controller
     {
         $user=Auth::user();
         $post=$request->only('description','attachment');
+        if(!empty($post['attachment'])&&!FileClass::checkExistFile($post['attachment']))
+            return ResponseHelper::errorNotAllowed('check attachment file');
         $post['attachment_type']=$request->get('attachment_type',null);// for setter to work
         $post['user_id']=$user->id;
         $post=$this->posts->createPost($post);
@@ -50,9 +53,16 @@ class PostController extends Controller
 
        $this->authorize('update',$post);
 
-        $updatedPost['description']=$request->get('description',$post['description']);
-        $updatedPost['attachment']=$request->get('attachment',$post['attachment']);
-        $updatedPost['attachment_type']=$request->get('attachment_type',$post['attachment_type']);
+        $updatedPost['description']=($request->has('description')) ?
+            $request->get('description') : $post['description'];
+        if(!empty($request->has('attachment')))
+        {
+            $updatedPost['attachment']=$request->get('attachment');
+            if(!FileClass::checkExistFile( $updatedPost['attachment']))
+                return ResponseHelper::errorNotAllowed('check attachment file');
+            $updatedPost['attachment_type']=FileClass::determineAttachmentType(
+                FileClass::getExtensionFromUrl($post['attachment']));
+        }
         $updatedPost=$this->posts->updatePost($postId,$updatedPost);
         if(empty($updatedPost))
             return ResponseHelper::isEmpty('updating fail');

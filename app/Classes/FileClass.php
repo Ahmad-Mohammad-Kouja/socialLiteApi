@@ -8,6 +8,7 @@ namespace App\Classes;
 
 use App\Enums\General\ExtensionTypes;
 use App\Enums\General\FileTypes;
+use Illuminate\Support\Facades\File;
 
 class FileClass
 {
@@ -46,5 +47,9 @@ class FileClass
                     $extension=$extension.$url[$j];
         }
         return $extension;
+    }
+    public static function checkExistFile($path)
+    {
+        return File::exists(public_path().$path);
     }
 }
