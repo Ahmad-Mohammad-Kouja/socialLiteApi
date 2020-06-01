@@ -41,7 +41,7 @@ class GetPostRequest extends FormRequest
                 ResponseHelper::isEmpty('data not found')
             );
         throw new HttpResponseException(
-            ResponseHelper::errorMissingParameter()
+            ResponseHelper::errorMissingParameter('missing param')
         );
     }
 }

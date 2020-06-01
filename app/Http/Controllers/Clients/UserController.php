@@ -32,12 +32,11 @@ class UserController extends Controller
 		$user['image']=$request->get('image',StringConstant::$defaultUserImage);
 		if(!FileClass::checkExistFile($user['image']))
 		    return ResponseHelper::errorNotAllowed('Enter valid Image url');
-
         $user=$this->users->createUser($user);
         if(empty($user))
             return ResponseHelper::isEmpty('registering fail');
         $user=$this->users->login(['email' => $user->email , 'password' => $request->get('password')]);
-        return ResponseHelper::select($user);
+        return ResponseHelper::insert($user);
     }
 
     public  function login(LoginRequest $request)

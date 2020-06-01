@@ -34,6 +34,7 @@ class RegisterRequest extends FormRequest
             'name' => 'required',
             'email' => ['required', 'email',Rule::unique('users')],
             'gender' => ['required', new EnumValue(GenderTypes::class)],
+            'image' => ['nullable', 'string'],
         ];
     }
 
