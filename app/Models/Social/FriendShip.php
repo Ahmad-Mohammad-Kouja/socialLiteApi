@@ -60,4 +60,9 @@ class FriendShip extends Model
         return FriendShip::where('id',$friendShipId)
             ->delete();
     }
+
+    public  function getFriendShip($filter)
+    {
+        return FriendShip::where($filter)->first();
+    }
 }

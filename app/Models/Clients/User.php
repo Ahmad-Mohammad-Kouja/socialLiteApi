@@ -2,7 +2,12 @@
 
 namespace App\Models\Clients;
 
+use App\Classes\FileClass;
+use App\Classes\StringConstant;
 use App\Enums\Clients\GenderTypes;
+use App\Enums\General\FileTypes;
+use App\Enums\General\StorageTypes;
+use App\Enums\Social\SocialProviderTypes;
 use App\Models\Social\Post;
 use BenSampo\Enum\Traits\CastsEnums;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -11,6 +16,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Passport\HasApiTokens;
+use Laravel\Socialite\Facades\Socialite;
 
 class User extends Authenticatable
 {
@@ -50,6 +56,8 @@ class User extends Authenticatable
     ];
 
 
+
+
     public function setPasswordAttribute($value)
     {
         $this->attributes['password'] = Hash::make($value);
@@ -57,14 +65,8 @@ class User extends Authenticatable
 
     public function setUserNameAttribute($value)
     {
-        $username=str_replace(' ','_',$value);
-        $userRows  = $this->getAllUserSameName($username);
-        $countUser = count($userRows) + 1;
-        $this->attributes['username'] =($countUser > 1) ? "{$username}_{$countUser}" : $username;
+        $this->attributes['username'] = $this->generateUserName($value);
     }
-
-
-
 
 
     public function post()
@@ -102,7 +104,7 @@ class User extends Authenticatable
     }
 
 
-    public function updateUser($user,$userId)
+    public function updateUser($userId,$user)
     {
         return User::where('id',$userId)
             ->update($user);
@@ -119,6 +121,67 @@ class User extends Authenticatable
        return User::whereRaw("username REGEXP '^{$name}(_[0-9]*)?$'")->get();
     }
 
+    public  function getUserFromSocialToken($token, $provider)
+    {
+        $user=null;
+        try {
+            $user=Socialite::driver($provider)->userFromToken($token);
+        }
+        catch (\Exception $e)
+        {
+            return null;
+        }
+        return $user;
+    }
+
+
+    public  function findOrCreateSocialUser($providerUser, $provider)
+    {
+
+        $user = User::getUser(['email'=>$providerUser->getEmail()]);
+
+        $avatar = $providerUser->getAvatar();
+        if ($provider == SocialProviderTypes::facebook)
+            $avatar = str_replace('normal', 'large', $avatar);
+
+        if (empty($user)) {
+
+            $username = User::generateUserName($providerUser->getName());
+            $profilePic = FileClass::getFileFromUrl(StringConstant::getFileName(FileTypes::photo,$username,
+                'png'),$avatar,StringConstant::getShortPath(StorageTypes::user,FileTypes::photo));
+
+            $user = User::create([
+                'email' => $providerUser->getEmail(),
+                'password' => Hash::make('abc'),
+                'username' => $username,
+                'image' => $profilePic,
+                'gender' => GenderTypes::male,
+                //'facebook_token' => ($provider == 'facebook') ? $providerUser->token : null,
+                //'google_token' => ($provider == 'google') ? $providerUser->token : null,
+            ]);
+        } else {
+            $deletedFile=FileClass::deleteFile($user->image);
+            $profilePic = FileClass::getFileFromUrl(StringConstant::getFileName(FileTypes::photo,$user->id,
+                'png'),$avatar,StringConstant::getShortPath(StorageTypes::user,FileTypes::photo));
+            User::updateUser($user->id, [
+                //'facebook_token' => ($provider == 'facebook') ? $providerUser->token : null,
+               // 'google_token' => ($provider == 'google') ? $providerUser->token : null,
+                'image' => $profilePic,
+            ]);
+        }
+        $user->refresh();
+        Auth::loginUsingId($user->id);
+        $user->tokenAPI = $user->createToken('socialite')->accessToken;
+        return $user;
+    }
+
+    public function generateUserName($name)
+    {
+        $username=str_replace(' ','_',$name);
+        $userRows  = $this->getAllUserSameName($username);
+        $countUser = count($userRows) + 1;
+        return ($countUser > 1) ? "{$username}_{$countUser}" : $username;
+    }
 
 
 }

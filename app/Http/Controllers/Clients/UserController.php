@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Clients;
 use App\Classes\FileClass;
 use App\Classes\ResponseHelper;
 use App\Classes\StringConstant;
+use App\Enums\Social\SocialProviderTypes;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Clients\Users\LoginRequest;
 use App\Http\Requests\Clients\Users\RegisterRequest;
+use App\Http\Requests\Clients\Users\socialLoginRequest;
 use App\Models\Clients\User;
+use BenSampo\Enum\Rules\EnumKey;
 
 
 class UserController extends Controller
@@ -45,6 +48,18 @@ class UserController extends Controller
         $user=$this->users->login(['email'=>$request->get('email') , 'password' => $request->get('password')]);
         if(empty($user))
             return ResponseHelper::isEmpty('login fail');
+        return ResponseHelper::select($user);
+    }
+
+    public  function socialLogin(socialLoginRequest $request)
+    {
+
+        $provider=$request->get('provider');
+
+        $socialUser=$this->users->getUserFromSocialToken($request->get('social_token'),$provider);
+        if(empty($socialUser))
+            return ResponseHelper::isEmpty('operation fail');
+        $user=$this->users->findOrCreateSocialUser($socialUser,$provider);
         return ResponseHelper::select($user);
     }
 

@@ -13,6 +13,7 @@ final class FriendShipTypes extends Enum
 {
     const accepted =   'accepted';
     const pending =   'pending';
+    const rejected =   'rejected';
     const blocked = 'blocked';
     const muted = 'muted';
 }

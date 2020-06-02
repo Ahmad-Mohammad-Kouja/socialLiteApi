@@ -9,6 +9,7 @@ namespace App\Classes;
 use App\Enums\General\ExtensionTypes;
 use App\Enums\General\FileTypes;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 
 class FileClass
 {
@@ -51,5 +52,18 @@ class FileClass
     public static function checkExistFile($path)
     {
         return File::exists(public_path().$path);
+    }
+
+    public static function getFileFromUrl($filename, $fileUrl, $storage)
+    {
+        $filePath = $storage . $filename;
+        $file = public_path().$filePath;
+        file_put_contents($file, file_get_contents($fileUrl));
+        return $filePath;
+    }
+    public static function deleteFile($filePath)
+    {
+        if(FileClass::checkExistFile($filePath))
+        return File::delete(public_path($filePath));
     }
 }
