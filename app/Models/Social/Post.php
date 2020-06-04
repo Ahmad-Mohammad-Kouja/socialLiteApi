@@ -27,20 +27,19 @@ class Post extends Model
         'attachment_type' => FileTypes::class,
     ];
 
-    protected $appends = ['is_reacted'];
+    protected $appends = ['reacted'];
 
     protected $casts=[
         'user_id' => 'integer',
         'created_at' =>'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
-        'is_reacted' => 'bool'
     ];
 
-    public function getIsReactedAttribute()
+    public function getReactedAttribute()
     {
         $reactStatus=$this->checkPostReactStatus($this->attributes['id'],$this->attributes['user_id']);
-        return $this->attributes['is_reacted']= (empty($reactStatus)) ? false : true;
+        return $this->attributes['reacted']= (empty($reactStatus)) ? false : $reactStatus->reaction_type;
     }
 
     public function setAttachmentTypeAttribute()
@@ -167,10 +166,10 @@ class Post extends Model
 
     public function checkPostReactStatus($postId,$userId)
     {
-        return Post::join('Reactions','Reactions.post_id','=','posts.id')
-            ->where('Reactions.user_id',$userId)
+        return Post::join('reactions','reactions.post_id','=','posts.id')
+            ->where('reactions.user_id',$userId)
             ->where('posts.id',$postId)
-            ->where('Reactions.deleted_at',null)
+            ->where('reactions.deleted_at',null)
             ->first();
     }
 
