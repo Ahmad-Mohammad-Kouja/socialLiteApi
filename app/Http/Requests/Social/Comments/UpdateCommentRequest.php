@@ -29,7 +29,6 @@ class UpdateCommentRequest extends FormRequest
     public function rules()
     {
         return [
-           'post_id' => ['required',Rule::exists('posts','id')->where('deleted_at','NULL')],
            'comment_id' => ['required',Rule::exists('comments','id')->where('deleted_at','NULL')],
            'description' => ['required']
         ];
@@ -37,10 +36,6 @@ class UpdateCommentRequest extends FormRequest
 
     public function failedValidation(Validator $validator)
     {
-        if(strpos($validator->errors(),'The selected post id is invalid'))
-            throw new HttpResponseException(
-                ResponseHelper::isEmpty('data not found')
-            );
         if(strpos($validator->errors(),'The selected comment id is invalid'))
             throw new HttpResponseException(
                 ResponseHelper::isEmpty('data not found')
