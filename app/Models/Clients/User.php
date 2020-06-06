@@ -29,7 +29,8 @@ class User extends Authenticatable
      *
      * @var array
      */
-    protected $fillable = ['name', 'email','username','password','gender','image'];
+    protected $fillable = ['name', 'email','username','password','gender','image','facebook_token','google_token'
+    ,'bio','cover_image'];
 
 
     /**
@@ -153,19 +154,20 @@ class User extends Authenticatable
             $user = User::create([
                 'email' => $providerUser->getEmail(),
                 'password' => Hash::make('abc'),
+                'name' => $providerUser->getName(),
                 'username' => $username,
                 'image' => $profilePic,
                 'gender' => GenderTypes::male,
-                //'facebook_token' => ($provider == 'facebook') ? $providerUser->token : null,
-                //'google_token' => ($provider == 'google') ? $providerUser->token : null,
+                'facebook_token' => ($provider == 'facebook') ? $providerUser->token : null,
+                'google_token' => ($provider == 'google') ? $providerUser->token : null,
             ]);
         } else {
             $deletedFile=FileClass::deleteFile($user->image);
             $profilePic = FileClass::getFileFromUrl(StringConstant::getFileName(FileTypes::photo,$user->id,
                 'png'),$avatar,StringConstant::getShortPath(StorageTypes::user,FileTypes::photo));
             User::updateUser($user->id, [
-                //'facebook_token' => ($provider == 'facebook') ? $providerUser->token : null,
-               // 'google_token' => ($provider == 'google') ? $providerUser->token : null,
+                'facebook_token' => ($provider == 'facebook') ? $providerUser->token : null,
+                'google_token' => ($provider == 'google') ? $providerUser->token : null,
                 'image' => $profilePic,
             ]);
         }
@@ -181,6 +183,43 @@ class User extends Authenticatable
         $userRows  = $this->getAllUserSameName($username);
         $countUser = count($userRows) + 1;
         return ($countUser > 1) ? "{$username}_{$countUser}" : $username;
+    }
+
+    public function getProfile($filter)
+    {
+        return User::where($filter)
+                    ->with(['post'=>function($post)
+                    {
+                        $post->with([
+                            'likes' => function($like)
+                            {
+                                $like->with('user');
+                            }
+                            ,'loves' => function($love)
+                            {
+                                $love->with('user');
+                            }
+                            ,'sad' => function($sad)
+                            {
+                                $sad->with('user');
+                            }
+                            ,'angers' => function($anger)
+                            {
+                                $anger->with('user');
+                            }
+                            ,'laughs' => function($laugh)
+                            {
+                                $laugh->with('user');
+                            },'wonder' => function($laugh)
+                            {
+                                $laugh->with('user');
+                            },'comments'=> function($comment)
+                            {
+                                $comment->with('user');
+                            },'user'])
+                            ->withCount(['likes','loves','angers','sad','laughs','wonder'])
+                            ->latest()->get();
+                    }])->first();
     }
 
 

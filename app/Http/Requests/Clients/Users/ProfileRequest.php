@@ -1,7 +1,6 @@
 <?php
 
-namespace App\Http\Requests\Social\Posts;
-
+namespace App\Http\Requests\Clients\Users;
 
 use App\Classes\ResponseHelper;
 use Illuminate\Contracts\Validation\Validator;
@@ -9,7 +8,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rule;
 
-class GetPostRequest extends FormRequest
+class ProfileRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -18,7 +17,7 @@ class GetPostRequest extends FormRequest
      */
     public function authorize()
     {
-        return true;
+        return false;
     }
 
     /**
@@ -29,14 +28,14 @@ class GetPostRequest extends FormRequest
     public function rules()
     {
         return [
-           'post_id' => ['nullable','integer',Rule::exists('posts','id')->where('deleted_at',null)]
+            'post_id' => ['nullable','integer',Rule::exists('users','id')->where('deleted_at',null)]
         ];
     }
 
 
     public function failedValidation(Validator $validator)
     {
-        if(strpos($validator->errors(),'The selected post id is invalid'))
+        if(strpos($validator->errors(),'The selected user id is invalid'))
             throw new HttpResponseException(
                 ResponseHelper::isEmpty('data not found')
             );

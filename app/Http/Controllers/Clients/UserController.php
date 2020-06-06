@@ -8,10 +8,13 @@ use App\Classes\StringConstant;
 use App\Enums\Social\SocialProviderTypes;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Clients\Users\LoginRequest;
+use App\Http\Requests\Clients\Users\ProfileRequest;
 use App\Http\Requests\Clients\Users\RegisterRequest;
 use App\Http\Requests\Clients\Users\socialLoginRequest;
 use App\Models\Clients\User;
 use BenSampo\Enum\Rules\EnumKey;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 
 class UserController extends Controller
@@ -61,6 +64,19 @@ class UserController extends Controller
             return ResponseHelper::isEmpty('operation fail');
         $user=$this->users->findOrCreateSocialUser($socialUser,$provider);
         return ResponseHelper::select($user);
+    }
+
+    public function profile(ProfileRequest $request)
+    {
+        if($request->has('user_id'))
+        $userId=$request->get('user_id');
+        else $userId=$request->user()->id;
+
+        $userProfile=$this->users->getProfile(['id'=>$userId]);
+        if(empty($userProfile))
+            return ResponseHelper::isEmpty('data not found');
+        return ResponseHelper::select($userProfile);
+
     }
 
 }

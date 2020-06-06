@@ -33,6 +33,8 @@ class PostController extends Controller
     {
         $user=Auth::user();
         $post=$request->only('description','attachment');
+		if(!$request->has('attachment'))
+			$post['attachment']=null;
         if(!empty($post['attachment'])&&!FileClass::checkExistFile($post['attachment']))
             return ResponseHelper::errorNotAllowed('check attachment file');
         $post['attachment_type']=$request->get('attachment_type',null);// for setter to work

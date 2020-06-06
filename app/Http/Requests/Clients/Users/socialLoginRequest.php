@@ -38,7 +38,7 @@ class socialLoginRequest extends FormRequest
     {
 
         throw new HttpResponseException(
-            ResponseHelper::errorMissingParameter('missing param')
+            ResponseHelper::errorMissingParameter($validator->getMessageBag())
         );
 
     }
