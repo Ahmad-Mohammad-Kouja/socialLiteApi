@@ -13,6 +13,9 @@ use Illuminate\Validation\Rule;
 
 class UploadFileRequest extends FormRequest
 {
+
+
+    protected $validator = \Illuminate\Support\Facades\Validator::class;
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -31,7 +34,7 @@ class UploadFileRequest extends FormRequest
     public function rules()
     {
         return [
-            'file' => ['required','file','mimes:jpg,jpeg,png,mp4,mov'],
+            'file' => ['required|mimes:jpg,jpeg,png,mp4,mov|max:2048'],
             'file_type' => ['required',new EnumValue(StorageTypes::class)]
         ];
     }
@@ -40,7 +43,7 @@ class UploadFileRequest extends FormRequest
     {
 
         throw new HttpResponseException(
-            ResponseHelper::errorMissingParameter()
+            ResponseHelper::errorMissingParameter($validator->getMessageBag())
         );
     }
 }

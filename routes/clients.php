@@ -12,7 +12,7 @@ Route::post('socialLogin','UserController@socialLogin');
 
 Route::group(['middleware'=>'auth:api'],function () {
     Route::prefix('user')->group(function () {
-        Route::post('profile', 'UserController@profile');
+        Route::get('profile', 'UserController@profile');
     });
 });
 

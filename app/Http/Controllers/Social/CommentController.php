@@ -5,15 +5,12 @@ namespace App\Http\Controllers\Social;
 
 use App\Classes\ResponseHelper;
 use App\Http\Controllers\Controller;;
-
 use App\Http\Requests\Social\Comments\AddCommentRequest;
 use App\Http\Requests\Social\Comments\DeleteCommentRequest;
 use App\Http\Requests\Social\Comments\UpdateCommentRequest;
 use App\Models\Social\Comment;
-use App\Models\Social\Post;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
+
 
 class CommentController extends Controller
 {
